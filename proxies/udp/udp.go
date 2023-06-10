@@ -14,8 +14,13 @@ func ConnectToUDP(addr *net.UDPAddr) {
 	// hier sollte etwas error handling stattfinden
 	conn, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
-		fmt.Printf("Error while connecting to udp: " + err.Error())
+		fmt.Printf("Error while connecting to udp: " + err.Error() + "\n")
+		fmt.Printf("addr info: %s\n", addr.IP)
+		fmt.Printf("addr info: %d\n", addr.Port)
 		return
+	}
+	if clientConnection != nil {
+		clientConnection.Close()
 	}
 	clientConnection = conn
 }
@@ -40,13 +45,13 @@ func handleC2S() { // FiveM -> Scriptprox -> Server
 		var buf []byte = make([]byte, 1600)
 		n, addr, err := serverConnection.ReadFromUDP(buf)
 		if err != nil {
-			fmt.Printf("Error while receiving C2S data: " + err.Error())
 			continue
 		}
 
 		addrToSendTo = addr
-		fmt.Printf("C2S msg from %s w/ size %d\n", addr, n)
-		clientConnection.Write(buf[0:n])
+		if clientConnection != nil {
+			clientConnection.Write(buf[0:n])
+		}
 	}
 }
 
@@ -61,7 +66,6 @@ func handleS2C() { // Server -> Scriptprox -> FiveM
 		if err != nil {
 			continue
 		}
-		fmt.Printf("S2C msg size %d\n", n)
 
 		serverConnection.WriteTo(buf[0:n], addrToSendTo)
 	}
