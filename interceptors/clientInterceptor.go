@@ -28,18 +28,11 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 		if len(bodyJson) > 0 { // ein endpoint ist angegeben
 			addrToConnectTo, _ = net.ResolveUDPAddr("udp", bodyJson[0])
 		} else { // default endpoint nehmen
-			addr, err := net.ResolveUDPAddr("udp", net.JoinHostPort(resp.Request.URL.Hostname(), resp.Request.URL.Port()))
-
-			if err != nil {
-				fmt.Println(net.JoinHostPort(resp.Request.URL.Hostname(), resp.Request.URL.Port()))
-				fmt.Println(err)
-			}
+			addr, _ := net.ResolveUDPAddr("udp", net.JoinHostPort(resp.Request.URL.Hostname(), resp.Request.URL.Port()))
 			addrToConnectTo = addr
 		}
 
 		udp.ConnectToUDP(addrToConnectTo)
-
-		fmt.Println(bodyJson)
 
 		resp.Body = io.NopCloser(bytes.NewBuffer(
 			[]byte("[\"127.0.0.1:30120\"]"),
@@ -51,7 +44,7 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 		var bodyData GetConfigurationData
 		err := json.Unmarshal(readBody, &bodyData)
 		if err != nil {
-			fmt.Println("err" + err.Error())
+			fmt.Println("Error (getConfiguration): " + err.Error())
 		}
 
 		idx := slices.IndexFunc(bodyData.Resources, func(res ResourceData) bool {
@@ -66,7 +59,6 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 
 		for ind, resource := range bodyData.Resources {
 			if resource.FileServer == "" {
-				fmt.Println(resp.Request.URL.Scheme + "://" + resp.Request.URL.Host + "/files")
 				bodyData.Resources[ind].FileServer = resp.Request.URL.Scheme + "://" + resp.Request.URL.Host + "/files"
 			}
 		}

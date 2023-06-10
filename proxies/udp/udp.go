@@ -14,9 +14,7 @@ func ConnectToUDP(addr *net.UDPAddr) {
 	// hier sollte etwas error handling stattfinden
 	conn, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
-		fmt.Printf("Error while connecting to udp: " + err.Error() + "\n")
-		fmt.Printf("addr info: %s\n", addr.IP)
-		fmt.Printf("addr info: %d\n", addr.Port)
+		fmt.Printf("Error beim UDP-Proxy: " + err.Error() + "\n")
 		return
 	}
 	if clientConnection != nil {

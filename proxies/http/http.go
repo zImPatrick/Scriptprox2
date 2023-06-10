@@ -39,9 +39,7 @@ func WriteError(writer http.ResponseWriter, err string) {
 }
 
 func requestHandler(writer http.ResponseWriter, req *http.Request) {
-	fmt.Println(req.URL.Path)
 	if req.URL.Path == "/spawnmanager/resource.rpf" {
-		fmt.Println("Serving mod menu")
 		f, err := os.Open("resource.rpf")
 		if err != nil {
 			writer.WriteHeader(500)
