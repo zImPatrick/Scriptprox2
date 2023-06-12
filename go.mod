@@ -14,5 +14,6 @@ require (
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
 	golang.org/x/image v0.0.0-20220302094943-723b81ca9867 // indirect
 	golang.org/x/sys v0.1.0 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/eapache/queue.v1 v1.1.0 // indirect
 )

@@ -1,0 +1,40 @@
+syntax = "proto3";
+package ServerList;
+
+option go_package = ".";
+
+message Player {
+	string name = 1;
+	repeated string identifiers = 2;
+	string endpoint = 3;
+	int32 ping = 4;
+	uint32 id = 5; 
+}
+
+message ServerData {
+	int32 svMaxclients = 1;
+	int32 clients = 2;
+	int32 protocol = 3;
+	string hostname = 4;
+	string gametype = 5;
+	string mapname = 6;
+	repeated string resources = 8;
+	string server = 9;
+	repeated Player players = 10;
+	int32 iconVersion = 11;
+	repeated Pair vars = 12;
+	bool enhancedHostSupport = 16;
+	int32 upvotePower = 17;
+	int32 burstPower = 19;
+	repeated string connectEndPoints = 18;
+}
+
+message Server {
+	string EndPoint = 1;
+	ServerData Data = 2;
+}
+
+message Pair {
+	string key = 1;
+	string value = 2;
+ }
