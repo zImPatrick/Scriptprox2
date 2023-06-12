@@ -1,13 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"scriptprox/gui"
 	"scriptprox/proxies/http"
 	"scriptprox/proxies/udp"
 	"sync"
 )
 
 func main() {
+	fmt.Println("Starting....")
 	var waitgroup sync.WaitGroup
 	waitgroup.Add(2)
 	go http.InitProxy(&waitgroup)
@@ -19,5 +22,6 @@ func main() {
 	}
 
 	go cli()
+	go gui.RunGUI()
 	waitgroup.Wait()
 }
