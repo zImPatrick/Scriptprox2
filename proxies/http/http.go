@@ -1,7 +1,6 @@
 package http
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -10,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"scriptprox/interceptors"
+	"strings"
 	"sync"
 )
 
@@ -61,14 +61,14 @@ func requestHandler(writer http.ResponseWriter, req *http.Request) {
 
 	// die req body ist meist ziemlich klein, und aus convienience gründen lesen wir einfach den body sofort
 	reqBody, _ := io.ReadAll(req.Body)
-	req.Body = io.NopCloser(bytes.NewBuffer(reqBody))
 
+	fmt.Printf("%s %s %s\n", req.Method, req.URL.String(), reqBody)
 	newReq, _ := http.NewRequest(
 		req.Method,
 		endpoint.JoinPath(
 			req.URL.String(),
 		).String(),
-		req.Body,
+		strings.NewReader(string(reqBody)),
 	)
 	newReq.Header = req.Header
 	newResp, err := httpClient.Do(newReq)

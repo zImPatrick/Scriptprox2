@@ -73,6 +73,7 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 		})
 
 		marshaled, _ := json.Marshal(bodyData)
+		// fmt.Println(marsha7t6rled)
 		resp.Body = io.NopCloser(bytes.NewBuffer(marshaled))
 
 		// resp.Body = io.NopCloser(bytes.NewBuffer(reqBody))
@@ -110,6 +111,7 @@ type ResourceData struct {
 }
 
 type GetConfigurationData struct {
-	FileServer string         `json:"fileServer"`
-	Resources  []ResourceData `json:"resources"`
+	FileServer  string         `json:"fileServer"`
+	Resources   []ResourceData `json:"resources"`
+	GrantsToken string         `json:"grants_token"`
 }

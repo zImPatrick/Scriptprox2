@@ -13,7 +13,7 @@ func main() {
 	go http.InitProxy(&waitgroup)
 	go udp.InitProxy(&waitgroup)
 
-	if len(os.Args) > 0 {
+	if len(os.Args) > 1 {
 		addrToConnectTo := os.Args[1]
 		http.ChangeEndpoint(addrToConnectTo)
 	}
