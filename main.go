@@ -21,7 +21,5 @@ func main() {
 		http.ChangeEndpoint(addrToConnectTo)
 	}
 
-	go cli()
-	go gui.RunGUI()
-	waitgroup.Wait()
+	gui.RunGUI()
 }
