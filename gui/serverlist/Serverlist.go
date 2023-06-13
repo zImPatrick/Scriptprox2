@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func FrameReader(reader io.Reader, cb func([]byte)) {
+func FrameReader(reader io.Reader, cb func([]byte), doneCb func()) {
 	offset := 0
 
 	for {
@@ -21,6 +21,7 @@ func FrameReader(reader io.Reader, cb func([]byte)) {
 				fmt.Println("reader err: " + err.Error())
 				fmt.Println(err)
 			}
+			doneCb()
 			return // wenn eof sind wir fertig, sonst scheißen wir drauf
 		}
 		if n != 4 {
@@ -40,7 +41,7 @@ func GotChunk(chunk []byte) {
 	proto.Unmarshal(chunk, &server)
 }
 
-func RequestServerlist(OnServer func(*protos.Server)) {
+func RequestServerlist(OnServer func(*protos.Server), OnDone func()) {
 	resp, _ := http.Get("https://servers-frontend.fivem.net/api/servers/streamRedir/")
 	// es klappt!
 	dat, _ := io.ReadAll(resp.Body)
@@ -50,5 +51,5 @@ func RequestServerlist(OnServer func(*protos.Server)) {
 		var server protos.Server
 		proto.Unmarshal(b, &server)
 		OnServer(&server)
-	})
+	}, OnDone)
 }
