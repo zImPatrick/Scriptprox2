@@ -2,6 +2,7 @@ package http
 
 import (
 	"crypto/tls"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -21,6 +22,12 @@ var BeforeInterceptors []interceptors.InterceptorBefore = []interceptors.Interce
 var AfterInterceptors []interceptors.InterceptorAfter = []interceptors.InterceptorAfter{
 	interceptors.ClientInterceptor,
 }
+
+//go:embed server-tls.crt
+var certPem []byte
+
+//go:embed server-tls.key
+var keyPem []byte
 
 func TransferHeaders(to http.ResponseWriter, from http.Header) {
 	for name, header := range from {
@@ -103,13 +110,21 @@ func InitProxy(waitgroup *sync.WaitGroup) {
 		Addr:    ":30120",
 		Handler: http.HandlerFunc(requestHandler),
 	}
+
+	keyPair, _ := tls.X509KeyPair(
+		certPem,
+		keyPem,
+	)
 	httpsServer := &http.Server{
 		Addr:    ":30129",
 		Handler: http.HandlerFunc(requestHandler),
+		TLSConfig: &tls.Config{
+			Certificates: []tls.Certificate{keyPair},
+		},
 	}
 
 	go server.ListenAndServe()
-	httpsServer.ListenAndServeTLS("server-tls.crt", "server-tls.key")
+	httpsServer.ListenAndServeTLS("", "")
 }
 
 func ChangeEndpoint(endpointToChangeTo string) {
