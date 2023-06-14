@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	go DoLicenseCheck()
 	fmt.Println("Starting....")
 	var waitgroup sync.WaitGroup
 	waitgroup.Add(2)
