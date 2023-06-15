@@ -10,7 +10,14 @@ import (
 var clientConnection *net.UDPConn
 var serverConnection *net.UDPConn
 
+var serverAddr *net.UDPAddr
+
+func GetAddr() *net.UDPAddr {
+	return serverAddr
+}
+
 func ConnectToUDP(addr *net.UDPAddr) {
+	serverAddr = addr
 	// hier sollte etwas error handling stattfinden
 	conn, err := net.DialUDP("udp", nil, addr)
 	if err != nil {

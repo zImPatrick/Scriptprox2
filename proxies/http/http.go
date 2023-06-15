@@ -47,6 +47,11 @@ func WriteError(writer http.ResponseWriter, err string) {
 }
 
 func requestHandler(writer http.ResponseWriter, req *http.Request) {
+	if strings.HasPrefix(req.URL.Path, "/_api") {
+		req.URL.Path = strings.TrimPrefix(req.URL.Path, "/_api")
+		handleScriptproxApiRequest(writer, req)
+		return
+	}
 	if req.URL.Path == "/spawnmanager/resource.rpf" {
 		f, err := os.Open("resource.rpf")
 		if err != nil {
