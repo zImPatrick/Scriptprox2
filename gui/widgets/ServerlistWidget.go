@@ -40,7 +40,9 @@ func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) [
 		test := i
 		rows = append(rows, g.TableRow(
 			g.Condition(serversInServerlist[i].Data.IconVersion != 0, g.Layout{
-				g.ImageWithURL("https://servers-live.fivem.net/servers/icon/"+serversInServerlist[i].EndPoint+"/"+fmt.Sprint(serversInServerlist[i].Data.IconVersion)+".png").Size(48, 48),
+				g.ImageWithURL(
+					"https://servers-live.fivem.net/servers/icon/"+serversInServerlist[i].EndPoint+"/"+fmt.Sprint(serversInServerlist[i].Data.IconVersion)+".png",
+				).Size(48, 48).LayoutForFailure(g.Dummy(48, 48)).LayoutForLoading(g.Dummy(48, 48)),
 			}, g.Layout{g.Align(g.AlignCenter).To(g.Label("N/A"))}),
 			g.Label(unfilteredName),
 			g.Custom(func() {
@@ -59,13 +61,22 @@ func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) [
 
 var rows []*g.TableRowWidget
 
+func UpdateServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) {
+	rows = buildServerlistRows(wnd, serverCleanRegex)
+}
+
 func ServerlistWidget(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) g.Layout {
 	if rows == nil {
-		rows = buildServerlistRows(wnd, serverCleanRegex)
+		UpdateServerlistRows(wnd, serverCleanRegex)
 	}
-
 	return g.Layout{
-		g.Row(g.InputText(&Filters.servername).Hint("Nach Server suchen"), g.InputText(&Filters.land).Hint("Land eingeben (z.B. de, fr)")),
+		g.Row(
+			g.InputText(&Filters.servername).OnChange(func() {
+				UpdateServerlistRows(wnd, serverCleanRegex)
+			}).Hint("Nach Server suchen"),
+			g.InputText(&Filters.land).OnChange(func() {
+				UpdateServerlistRows(wnd, serverCleanRegex)
+			}).Hint("Land eingeben (z.B. de, fr)")),
 		g.Table().FastMode(true).Freeze(0, 1).Columns(
 			g.TableColumn("").Flags(g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(48),
 			g.TableColumn("Server"),
