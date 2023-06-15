@@ -57,7 +57,13 @@ func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) [
 	return rows
 }
 
+var rows []*g.TableRowWidget
+
 func ServerlistWidget(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) g.Layout {
+	if rows == nil {
+		rows = buildServerlistRows(wnd, serverCleanRegex)
+	}
+
 	return g.Layout{
 		g.Row(g.InputText(&Filters.servername).Hint("Nach Server suchen"), g.InputText(&Filters.land).Hint("Land eingeben (z.B. de, fr)")),
 		g.Table().FastMode(true).Freeze(0, 1).Columns(
@@ -65,16 +71,14 @@ func ServerlistWidget(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) g.La
 			g.TableColumn("Server"),
 			g.TableColumn("Land").Flags(g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(32),
 			g.TableColumn("Spieler").Flags(g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(48),
-		).Rows(buildServerlistRows(wnd, serverCleanRegex)...),
+		).Rows(rows...),
 	}
 }
 
 func RefreshServerlist() {
 	serversInServerlist = []*serverlistProtos.Server{}
 	serverlist.RequestServerlist(func(s *serverlistProtos.Server) {
-		if s.Data.Clients > 0 {
-			serversInServerlist = append(serversInServerlist, s)
-		}
+		serversInServerlist = append(serversInServerlist, s)
 	}, func() {
 		// fertig
 		sort.SliceStable(serversInServerlist, func(i, j int) bool {
