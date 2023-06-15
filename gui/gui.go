@@ -2,7 +2,6 @@ package gui
 
 import (
 	"regexp"
-
 	"scriptprox/gui/widgets"
 
 	g "github.com/AllenDang/giu"
