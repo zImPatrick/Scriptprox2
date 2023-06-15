@@ -21,6 +21,7 @@ var httpClient *http.Client
 var BeforeInterceptors []interceptors.InterceptorBefore = []interceptors.InterceptorBefore{}
 var AfterInterceptors []interceptors.InterceptorAfter = []interceptors.InterceptorAfter{
 	interceptors.ClientInterceptor,
+	interceptors.InfoInterceptor,
 }
 
 //go:embed server-tls.crt

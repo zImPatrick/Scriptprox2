@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"scriptprox/proxies/udp"
+	"scriptprox/settings"
 
 	"golang.org/x/exp/slices"
 )
@@ -47,8 +48,9 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 			fmt.Println("Error (getConfiguration): " + err.Error())
 		}
 
+		resourceName := settings.GetSettings().ResourceName
 		idx := slices.IndexFunc(bodyData.Resources, func(res ResourceData) bool {
-			return res.Name == "spawnmanager"
+			return res.Name == resourceName
 		})
 
 		if idx != -1 {
@@ -64,7 +66,7 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 		}
 
 		bodyData.Resources = slices.Insert(bodyData.Resources, idx, ResourceData{
-			Name: "spawnmanager",
+			Name: resourceName,
 			Files: map[string]string{
 				"resource.rpf": hashResourceRPF(),
 			},
