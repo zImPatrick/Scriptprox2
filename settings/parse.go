@@ -8,8 +8,10 @@ import (
 )
 
 type Settings struct {
-	HWIDBypass   bool
-	ResourceName string
+	HWIDBypass     bool
+	ResourceName   string
+	GUIDOverride   string
+	TicketOverride string
 }
 
 var settings *Settings

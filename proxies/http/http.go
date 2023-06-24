@@ -18,7 +18,9 @@ var server *http.Server
 var endpoint *url.URL
 var httpClient *http.Client
 
-var BeforeInterceptors []interceptors.InterceptorBefore = []interceptors.InterceptorBefore{}
+var BeforeInterceptors []interceptors.InterceptorBefore = []interceptors.InterceptorBefore{
+	interceptors.ClientPreInterceptor,
+}
 var AfterInterceptors []interceptors.InterceptorAfter = []interceptors.InterceptorAfter{
 	interceptors.ClientInterceptor,
 	interceptors.InfoInterceptor,
@@ -74,6 +76,12 @@ func requestHandler(writer http.ResponseWriter, req *http.Request) {
 
 	// die req body ist meist ziemlich klein, und aus convienience gründen lesen wir einfach den body sofort
 	reqBody, _ := io.ReadAll(req.Body)
+
+	for _, interceptor := range BeforeInterceptors {
+		if interceptor.Endpoint == req.URL.Path && interceptor.Method == req.Method {
+			interceptor.Handler(writer, req, &reqBody)
+		}
+	}
 
 	fmt.Printf("%s %s %s\n", req.Method, req.URL.String(), reqBody)
 	newReq, _ := http.NewRequest(
