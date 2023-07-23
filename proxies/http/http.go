@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -141,10 +142,11 @@ func InitProxy(waitgroup *sync.WaitGroup) {
 	httpsServer.ListenAndServeTLS("", "")
 }
 
-func ChangeEndpoint(endpointToChangeTo string) {
+func ChangeEndpoint(endpointToChangeTo string) error {
 	u, err := url.Parse(endpointToChangeTo)
 	if err != nil {
-		panic(err)
+		return errors.New("Ungültige Server-URL! " + err.Error())
 	}
 	endpoint = u
+	return nil
 }

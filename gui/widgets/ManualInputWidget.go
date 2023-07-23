@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	httpScriptprox "scriptprox/proxies/http"
+	"scriptprox/settings"
 
 	g "github.com/AllenDang/giu"
 )
@@ -31,6 +32,7 @@ type ServerInfo struct {
 var (
 	serverIdOrUrl string
 	server        ServerInfo // zu faul ein interface zu erstellen
+	manualServerIp string
 )
 
 func ServerSuchen(status *string, idOrUrl string) {
@@ -63,26 +65,43 @@ func verbinden(status *string) {
 	}
 	httpScriptprox.ChangeEndpoint(connectEndpoint)
 	exec.Command("rundll32", "url.dll,FileProtocolHandler", "fivem://connect/localhost:30120").Run()
-	*status = "FiveM sollte nun gestartet werden. \nNutze:\n> connect localhost:30120\n in der FiveM-Konsole falls es nicht geht."
+	*status = "FiveM wurde gestartet."
 }
 
 func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout {
+	if config == nil {
+		config = settings.GetSettings()
+	}
 	return g.Layout{
 		g.Row(
-			g.Label("Server-URL eingeben"),
-			g.InputText(&serverIdOrUrl),
+			g.Label("Server eingeben"),
+			g.InputText(&serverIdOrUrl).Hint("cfx.re/join/zq4ayd"),
 			g.Button("Server suchen").OnClick(func() { go ServerSuchen(status, serverIdOrUrl) }),
+		),
+		g.Row(
+			g.Condition(config.ProfiModus, g.Layout{
+				g.InputText(&manualServerIp).Hint("https://zimpatrick.gq"),
+				g.Button("Einstellen").OnClick(func() {
+					err := httpScriptprox.ChangeEndpoint(manualServerIp)
+					if err != nil {
+						*status = err.Error()
+					} else {
+						exec.Command("rundll32", "url.dll,FileProtocolHandler", "fivem://connect/localhost:30120").Run()
+						*status = "FiveM wurde gestartet."
+					}
+				}),
+			}, g.Layout{}),
 		),
 		g.Condition(server.EndPoint != "", g.Layout{
 			g.Row(
 				// mir gefällt das hier nicht.
 				g.Condition(server.Data.IconVersion != 0, g.Layout{
 					g.ImageWithURL("https://servers-live.fivem.net/servers/icon/" + server.EndPoint + "/" + fmt.Sprint(server.Data.IconVersion) + ".png").LayoutForLoading(
-						g.Align(g.AlignCenter).To(g.Label("N/A")),
+						g.Label("N/A"),
 					).LayoutForFailure(
-						g.Align(g.AlignCenter).To(g.Label("N/A")),
+						g.Label("N/A"),
 					),
-				}, g.Layout{g.Align(g.AlignCenter).To(g.Label("N/A"))}),
+				}, g.Layout{g.Label("N/A")}),
 				g.Column(
 					g.Label(serverCleanRegex.ReplaceAllString(server.Data.Hostname, "")),
 					g.Label(fmt.Sprint(server.Data.Clients)+"/"+fmt.Sprint(server.Data.SvMaxclients)+" Spieler"),
