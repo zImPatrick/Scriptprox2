@@ -9,7 +9,15 @@ import (
 )
 
 func downloadAndReplace(fileName string) error {
-	f, err := os.OpenFile(fileName, os.O_CREATE | os.O_RDWR, 0644)
+	if fileName == "scriptprox.exe" {
+		// extra hacks für scriptprox.exe für n inplace update
+		err := os.Rename("scriptprox.exe", "scriptprox.exe.bak")
+		if err != nil {
+			return err
+		}
+	}
+
+	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
@@ -20,7 +28,7 @@ func downloadAndReplace(fileName string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	defer req.Body.Close()
 	_, err = io.Copy(f, req.Body)
 	if err != nil {
