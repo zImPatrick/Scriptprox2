@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"scriptprox/interceptors"
+	"scriptprox/utils"
 	"strings"
 	"sync"
 )
@@ -112,6 +113,8 @@ func requestHandler(writer http.ResponseWriter, req *http.Request) {
 
 func InitProxy(waitgroup *sync.WaitGroup) {
 	defer waitgroup.Done()
+
+	// HTTP Client für Requests
 	httpClient = &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -121,11 +124,21 @@ func InitProxy(waitgroup *sync.WaitGroup) {
 		},
 	}
 
+	// HTTP Server
 	server = &http.Server{
 		Addr:    ":30120",
 		Handler: http.HandlerFunc(requestHandler),
 	}
-
+	go func () {
+		err := server.ListenAndServe()
+		if err != nil {
+			utils.ThrowErrorAndQuit("Der HTTP-Server konnte nicht starten. Ist Port 30120 belegt?", err)
+		}
+	}()
+	
+	// HTTPS Server
+	// du brauchst anscheinend einen HTTPS-Server
+	// für die FiveM Resources. kp wieso
 	keyPair, _ := tls.X509KeyPair(
 		certPem,
 		keyPem,
@@ -137,9 +150,10 @@ func InitProxy(waitgroup *sync.WaitGroup) {
 			Certificates: []tls.Certificate{keyPair},
 		},
 	}
-
-	go server.ListenAndServe()
-	httpsServer.ListenAndServeTLS("", "")
+	err := httpsServer.ListenAndServeTLS("", "")
+	if err != nil {
+		utils.ThrowErrorAndQuit("Der HTTPS-Server konnte nicht starten. Ist Port 30129 belegt?", err)
+	}
 }
 
 func ChangeEndpoint(endpointToChangeTo string) error {

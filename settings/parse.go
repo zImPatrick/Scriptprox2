@@ -3,6 +3,7 @@ package settings
 import (
 	"fmt"
 	"os"
+	"scriptprox/utils"
 
 	"github.com/BurntSushi/toml"
 )
@@ -52,6 +53,7 @@ func parseSettings() {
 		// config existiert; parsen!
 		_, err := toml.DecodeFile("settings.toml", &settings)
 		if err != nil {
+			utils.ThrowErrorAndQuit("Ein Fehler ist beim lesen der Settings-Datei aufgetreten. Bitte lösche die settings.toml Datei und probiere es erneut.", err)
 			fmt.Println("Fehler beim Lesen der Settings-Datei! " + err.Error())
 			os.Exit(1)
 		}

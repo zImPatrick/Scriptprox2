@@ -12,6 +12,7 @@ import (
 	"os"
 	"scriptprox/proxies/udp"
 	"scriptprox/settings"
+	"scriptprox/utils"
 
 	"golang.org/x/exp/slices"
 )
@@ -86,7 +87,7 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 func hashResourceRPF() string {
 	f, err := os.Open("resource.rpf")
 	if err != nil {
-		fmt.Println("Ein Fehler ist beim Öffnen von resource.rpf aufgetreten. Hast du resource.rpf im Ordner?")
+		utils.ThrowErrorAndQuit("Ein Fehler ist beim Öffnen von resource.rpf aufgetreten. Hast du eine resource.rpf im Ordner?", err)
 	}
 	defer f.Close()
 
