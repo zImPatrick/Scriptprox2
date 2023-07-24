@@ -3,9 +3,13 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"scriptprox/proxies/udp"
 	"strings"
+	"time"
 )
 
 func doScriptproxApiResponse(writer http.ResponseWriter, statusCode int, body []byte) {
@@ -37,6 +41,39 @@ func handleScriptproxApiRequest(writer http.ResponseWriter, req *http.Request) {
 			"ip":   stringAddr[0],
 			"port": stringAddr[1],
 		}))
+	case "/saveFiles":
+		err := req.ParseMultipartForm(64 << 20)
+		if err != nil {
+			doScriptproxApiResponse(writer, 500, []byte("couldnt save"))
+			return
+		}
+		
+		receivedTime := fmt.Sprint(time.Now().UnixNano())
+		folderPath := filepath.Join("exportedScripts", receivedTime)
+		err = os.MkdirAll(folderPath, os.ModePerm)
+		if err != nil {
+			fmt.Printf("Konnte Ordner %s nicht erstellen, %s\n", folderPath, err.Error())
+			return
+		}
+
+		for _, fileHeaders := range req.MultipartForm.File {
+			for _, header := range fileHeaders {
+				savePath := filepath.Join(folderPath, header.Filename)
+				f, err := os.Create(savePath)
+				if err != nil {
+					fmt.Printf("Konnte %s nicht speichern, %s\n", savePath, err.Error())
+					continue
+				}
+				defer f.Close()
+				
+				multipartFile, err := header.Open()
+				if err != nil {
+					fmt.Printf("Konnte %s nicht laden, %s\n", header.Filename, err.Error())
+				}
+				defer multipartFile.Close()
+				io.Copy(f, multipartFile)
+			}
+		}
 	default:
 		{
 			println(req.URL.Path)
