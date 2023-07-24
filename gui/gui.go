@@ -3,6 +3,7 @@ package gui
 import (
 	"regexp"
 	"scriptprox/gui/widgets"
+	"scriptprox/updater"
 
 	g "github.com/AllenDang/giu"
 )
@@ -20,6 +21,9 @@ func loop() {
 		g.TabBar().TabItems(
 			g.TabItem("Allgemein").Layout(
 				widgets.ManualInputWidget(&status, serverCleanRegex),
+				g.Condition(updater.LastUpdate != nil && updater.LastUpdate.State == updater.AVAILABLE, g.Layout{
+					g.Label("Ein Update ist verfügbar. Wechsel zum Update-Tab, um es zu installieren."),
+				}, g.Layout{}),
 				g.Condition(status != "", g.Layout{
 					g.Label("Status: " + status),
 				}, nil),
@@ -33,6 +37,7 @@ func loop() {
 				})(), nil),
 			),
 			g.TabItem("Einstellungen").Layout(widgets.ConfigWidget()),
+			g.TabItem("Update").Layout(widgets.UpdateWidget()),
 		),
 	)
 }
