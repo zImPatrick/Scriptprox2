@@ -43,7 +43,7 @@ func UpdateWidget() g.Layout {
 				func() []*g.TableRowWidget {
 					list := make([]*g.TableRowWidget, 0)
 					for _, v := range updater.LastUpdate.RequiredFiles {
-						widgets := []g.Widget {
+						widgets := []g.Widget{
 							g.Label(v),
 						}
 						if err, ok := updater.LastUpdate.EncounteredErrors[v]; ok {
@@ -52,14 +52,13 @@ func UpdateWidget() g.Layout {
 								exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Run()
 							}))
 						}
-						
+
 						list = append(list, g.TableRow(widgets...))
 					}
 
 					return list
 				}()...,
 			),
-			g.Label("Derzeit kann die scriptprox.exe nicht aktualisiert werden, oops"),
 		}),
 	}
 }
