@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"scriptprox/gui/resources"
 	httpScriptprox "scriptprox/proxies/http"
 	"scriptprox/settings"
 
@@ -30,8 +31,8 @@ type ServerInfo struct {
 }
 
 var (
-	serverIdOrUrl string
-	server        ServerInfo // zu faul ein interface zu erstellen
+	serverIdOrUrl  string
+	server         ServerInfo // zu faul ein interface zu erstellen
 	manualServerIp string
 )
 
@@ -74,9 +75,13 @@ func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout
 	}
 	return g.Layout{
 		g.Row(
-			g.Label("Server eingeben"),
 			g.InputText(&serverIdOrUrl).Hint("cfx.re/join/zq4ayd"),
-			g.Button("Server suchen").OnClick(func() { go ServerSuchen(status, serverIdOrUrl) }),
+			resources.WithIconFont(
+				g.Row(
+					g.Button("\uf002").OnClick(func() { go ServerSuchen(status, serverIdOrUrl) }),
+					g.Button("\uf0ea").OnClick(func() { go ServerSuchen(status, g.Context.GetPlatform().GetClipboard()) }),
+				),
+			),
 		),
 		g.Row(
 			g.Condition(config.ProfiModus, g.Layout{
@@ -97,15 +102,26 @@ func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout
 				// mir gefällt das hier nicht.
 				g.Condition(server.Data.IconVersion != 0, g.Layout{
 					g.ImageWithURL("https://servers-live.fivem.net/servers/icon/" + server.EndPoint + "/" + fmt.Sprint(server.Data.IconVersion) + ".png").LayoutForLoading(
-						g.Label("N/A"),
+						g.Dummy(96, 96),
 					).LayoutForFailure(
-						g.Label("N/A"),
+						g.Dummy(96, 96),
 					),
-				}, g.Layout{g.Label("N/A")}),
+				}, g.Layout{g.Dummy(96, 96)}),
 				g.Column(
 					g.Label(serverCleanRegex.ReplaceAllString(server.Data.Hostname, "")),
-					g.Label(fmt.Sprint(server.Data.Clients)+"/"+fmt.Sprint(server.Data.SvMaxclients)+" Spieler"),
-					g.Button("Verbinden").OnClick(func() { verbinden(status) }),
+					g.Row(
+						g.Label("\uf007").Font(resources.IconFont),
+						g.Label(fmt.Sprint(server.Data.Clients)+"/"+fmt.Sprint(server.Data.SvMaxclients)),
+					),
+					g.Row(
+						g.Button("Verbinden").OnClick(func() { verbinden(status) }),
+						resources.WithIconFont(
+							g.Button("\uf0c5").OnClick(func() { g.Context.GetPlatform().SetClipboard(server.EndPoint) }),
+							g.Button("\f0dd").OnClick(func() { // Verstecken
+								server = ServerInfo{}
+							}),
+						),
+					),
 				),
 			),
 		}, nil),

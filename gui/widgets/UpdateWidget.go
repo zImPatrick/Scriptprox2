@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os/exec"
+	"scriptprox/gui/resources"
 	"scriptprox/updater"
 
 	g "github.com/AllenDang/giu"
@@ -20,7 +21,7 @@ func GetStringForUpdate(update updater.UpdateInfo) string {
 			return "Das Update wurde mit Fehlern durchgeführt. Mehr Details befinden sich unten."
 		}
 
-		return "Das Update wurde durchgeführt."
+		return "Das Update wurde erfolgreich durchgeführt."
 	default:
 		return fmt.Sprintf("Update keinen String für State %d, bitte melden", update.State)
 	}
@@ -32,7 +33,7 @@ func UpdateWidget() g.Layout {
 			g.Label("Kein Update verfügbar"),
 		}, g.Layout{
 			g.Row(
-				g.Button("Updaten").OnClick(func() { updater.InstallUpdate(updater.LastUpdate) }).Disabled(updater.LastUpdate.State != updater.AVAILABLE),
+				g.Button("Updaten").OnClick(func() { go updater.InstallUpdate(updater.LastUpdate) }).Disabled(updater.LastUpdate.State != updater.AVAILABLE),
 				g.Label(GetStringForUpdate(*updater.LastUpdate)),
 			),
 			g.Table().Columns(
@@ -44,7 +45,12 @@ func UpdateWidget() g.Layout {
 					list := make([]*g.TableRowWidget, 0)
 					for _, v := range updater.LastUpdate.RequiredFiles {
 						widgets := []g.Widget{
-							g.Label(v),
+							g.Row(
+								resources.WithIconFont(
+									g.Label("\uf15b"),
+								),
+								g.Label(v),
+							),
 						}
 						if err, ok := updater.LastUpdate.EncounteredErrors[v]; ok {
 							widgets = append(widgets, g.Label(err.Error()), g.Button("Manuell runterladen").OnClick(func() {

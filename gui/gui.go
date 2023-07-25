@@ -1,7 +1,10 @@
 package gui
 
 import (
+	_ "embed"
+	"image"
 	"regexp"
+	"scriptprox/gui/resources"
 	"scriptprox/gui/widgets"
 	"scriptprox/updater"
 
@@ -11,7 +14,6 @@ import (
 var (
 	status           string
 	serverCleanRegex *regexp.Regexp
-	showServerlist   bool
 )
 
 var wnd *g.MasterWindow
@@ -21,30 +23,36 @@ func loop() {
 		g.TabBar().TabItems(
 			g.TabItem("Allgemein").Layout(
 				widgets.ManualInputWidget(&status, serverCleanRegex),
-				g.Condition(updater.LastUpdate != nil && updater.LastUpdate.State == updater.AVAILABLE, g.Layout{
-					g.Label("Ein Update ist verfügbar. Wechsel zum Update-Tab, um es zu installieren."),
-				}, g.Layout{}),
 				g.Condition(status != "", g.Layout{
 					g.Label("Status: " + status),
 				}, nil),
-				g.Checkbox("Serverliste anzeigen", &showServerlist),
-				g.Condition(showServerlist, (func() g.Layout { //???????????
-					if showServerlist {
-						return widgets.ServerlistWidget(wnd, serverCleanRegex)
-					} else {
-						return g.Layout{}
-					}
-				})(), nil),
+				widgets.ServerlistWidget(wnd, serverCleanRegex),
 			),
 			g.TabItem("Einstellungen").Layout(widgets.ConfigWidget()),
-			g.TabItem("Update").Layout(widgets.UpdateWidget()),
+			g.TabItem("Updater").Layout(widgets.UpdateWidget()),
 		),
+		g.Custom(func() {
+			if updater.LastUpdate != nil && updater.LastUpdate.State == updater.AVAILABLE {
+				w, _ := wnd.GetSize()
+				point := g.GetCursorPos()
+				text := "Ein Update ist verfügbar!"
+				textW, _ := g.CalcTextSize(text)
+				g.SetCursorPos(image.Pt(w-int(textW)-2, 8))
+				g.Label("Ein Update ist verfügbar!").Wrapped(true).Build()
+				g.SetCursorPos(point)
+			}
+		}),
 	)
 }
+
+//go:embed resources/forkawesome-webfont.ttf
+var IconFont []byte
 
 func RunGUI() {
 	go widgets.RefreshServerlist()
 	serverCleanRegex = regexp.MustCompile(`\^[0-9]`)
+	font := g.AddFontFromBytes("Icons", IconFont, 16)
+	resources.IconFont = font
 	wnd = g.NewMasterWindow("Scriptprox", 800, 400, g.MasterWindowFlags(g.WindowFlagsAlwaysAutoResize))
 	wnd.Run(loop)
 }

@@ -3,6 +3,7 @@ package widgets
 import (
 	"fmt"
 	"regexp"
+	"scriptprox/gui/resources"
 	"scriptprox/gui/serverlist"
 	serverlistProtos "scriptprox/gui/serverlist/protos"
 	"sort"
@@ -43,7 +44,7 @@ func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) [
 				g.ImageWithURL(
 					"https://servers-live.fivem.net/servers/icon/"+serversInServerlist[i].EndPoint+"/"+fmt.Sprint(serversInServerlist[i].Data.IconVersion)+".png",
 				).Size(48, 48).LayoutForFailure(g.Dummy(48, 48)).LayoutForLoading(g.Dummy(48, 48)),
-			}, g.Layout{g.Align(g.AlignCenter).To(g.Label("N/A"))}),
+			}, g.Layout{g.Align(g.AlignCenter).To(g.Dummy(48, 48))}),
 			g.Label(unfilteredName),
 			g.Custom(func() {
 				w, _ := wnd.GetSize()
@@ -76,7 +77,11 @@ func ServerlistWidget(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) g.La
 			}).Hint("Nach Server suchen"),
 			g.InputText(&Filters.land).OnChange(func() {
 				UpdateServerlistRows(wnd, serverCleanRegex)
-			}).Hint("Land eingeben (z.B. de, fr)")),
+			}).Hint("Land eingeben (z.B. de, fr)").Size(220),
+			resources.WithIconFont(
+				g.Button("\uf021").OnClick(func() { go RefreshServerlist() }),
+			),
+		),
 		g.Table().FastMode(true).Freeze(0, 1).Columns(
 			g.TableColumn("").Flags(g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(48),
 			g.TableColumn("Server"),
@@ -88,6 +93,7 @@ func ServerlistWidget(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) g.La
 
 func RefreshServerlist() {
 	serversInServerlist = []*serverlistProtos.Server{}
+	rows = nil
 	serverlist.RequestServerlist(func(s *serverlistProtos.Server) {
 		serversInServerlist = append(serversInServerlist, s)
 	}, func() {
@@ -95,5 +101,6 @@ func RefreshServerlist() {
 		sort.SliceStable(serversInServerlist, func(i, j int) bool {
 			return serversInServerlist[i].Data.Clients > serversInServerlist[j].Data.Clients
 		})
+		rows = nil
 	})
 }
