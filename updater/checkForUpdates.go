@@ -12,10 +12,10 @@ const (
 )
 
 type UpdateInfo struct {
-	RequiredFiles []string
-	State UpdateState
+	RequiredFiles     []string
+	State             UpdateState
 	EncounteredErrors map[string]error
-	DoneCallback func()
+	DoneCallback      func()
 }
 
 func CheckForUpdates() (*UpdateInfo, error) {
@@ -27,12 +27,11 @@ func CheckForUpdates() (*UpdateInfo, error) {
 	toUpdate := checkAllFiles()
 	update := &UpdateInfo{
 		RequiredFiles: toUpdate,
+		State:         AVAILABLE,
 	}
 
 	if len(update.RequiredFiles) == 0 {
 		update.State = NONEXISTANT
-	} else {
-		update.State = AVAILABLE
 	}
 
 	LastUpdate = update

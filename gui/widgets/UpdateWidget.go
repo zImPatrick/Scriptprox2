@@ -28,12 +28,20 @@ func GetStringForUpdate(update updater.UpdateInfo) string {
 }
 
 func UpdateWidget() g.Layout {
-	return g.Layout{
-		g.Condition(updater.LastUpdate == nil || updater.LastUpdate.State == updater.NONEXISTANT, g.Layout{
-			g.Label("Kein Update verfügbar"),
-		}, g.Layout{
+	if updater.LastUpdate == nil { // sollten vielleicht auch error ausgeben
+		return g.Layout{
+			g.Label("Suche nach Updates..."),
+		}
+	}
+	if updater.LastUpdate.State == updater.NONEXISTANT {
+		return g.Layout{
+			g.Label("Kein Update ist derzeit verfügbar."),
+		}
+	} else {
+		return g.Layout{
 			g.Row(
-				g.Button("Updaten").OnClick(func() { go updater.InstallUpdate(updater.LastUpdate) }).Disabled(updater.LastUpdate.State != updater.AVAILABLE),
+				g.Button("Updaten").OnClick(func() { go updater.InstallUpdate(updater.LastUpdate) }).Disabled(updater.LastUpdate == nil ||
+					updater.LastUpdate.State != updater.AVAILABLE),
 				g.Label(GetStringForUpdate(*updater.LastUpdate)),
 			),
 			g.Table().Columns(
@@ -65,6 +73,6 @@ func UpdateWidget() g.Layout {
 					return list
 				}()...,
 			),
-		}),
+		}
 	}
 }
