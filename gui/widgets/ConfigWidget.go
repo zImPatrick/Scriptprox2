@@ -14,11 +14,13 @@ func ConfigWidget() g.Layout {
 	}
 
 	return g.Layout{
-		g.Checkbox("Tokens nicht erstellen/HWID Bypass", &config.HWIDBypass),
+		g.Checkbox("Tokens nicht erstellen/HWID Ban Bypass", &config.HWIDBypass),
+		g.Tooltip("Generiert sogenannte \"Tokens\" nicht. Diese werden oft von Servern benutzt, um deine HWID zu bannen."),
 		g.Row(
 			g.Label("Resource-Name"),
 			g.InputText(&config.ResourceName),
 		),
+		g.Tooltip("So \"tarnt\" sich das Mod-Menu im Spiel. spawnmanager ist oft ein gutes \"Versteck\"."),
 		g.Condition(config.ProfiModus, g.Layout{
 			g.Separator(),
 			g.Row(

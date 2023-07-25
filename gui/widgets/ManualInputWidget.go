@@ -31,9 +31,10 @@ type ServerInfo struct {
 }
 
 var (
-	serverIdOrUrl  string
-	server         ServerInfo // zu faul ein interface zu erstellen
-	manualServerIp string
+	serverIdOrUrl      string
+	server             ServerInfo // zu faul ein interface zu erstellen
+	manualServerIp     string
+	profiModusDropdown bool
 )
 
 func ServerSuchen(status *string, idOrUrl string) {
@@ -75,16 +76,21 @@ func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout
 	}
 	return g.Layout{
 		g.Row(
-			g.InputText(&serverIdOrUrl).Hint("cfx.re/join/zq4ayd"),
+			g.InputText(&serverIdOrUrl).Hint("cfx.re/join/zq4ayd").Size(200),
 			resources.WithIconFont(
 				g.Row(
 					g.Button("\uf002").OnClick(func() { go ServerSuchen(status, serverIdOrUrl) }),
 					g.Button("\uf0ea").OnClick(func() { go ServerSuchen(status, g.Context.GetPlatform().GetClipboard()) }),
+					g.Condition(config.ProfiModus, g.Layout{
+						g.Button("\uf0dd").OnClick(func() { profiModusDropdown = !profiModusDropdown }),
+					}, g.Layout{
+						g.Dummy(0, 0), // Workaround für Bug in giu
+					}),
 				),
 			),
 		),
-		g.Row(
-			g.Condition(config.ProfiModus, g.Layout{
+		g.Condition(profiModusDropdown, g.Layout{
+			g.Row(
 				g.InputText(&manualServerIp).Hint("https://zimpatrick.gq"),
 				g.Button("Einstellen").OnClick(func() {
 					err := httpScriptprox.ChangeEndpoint(manualServerIp)
@@ -95,8 +101,8 @@ func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout
 						*status = "FiveM wurde gestartet."
 					}
 				}),
-			}, g.Layout{}),
-		),
+			),
+		}, g.Layout{}),
 		g.Condition(server.EndPoint != "", g.Layout{
 			g.Row(
 				// mir gefällt das hier nicht.
@@ -113,13 +119,16 @@ func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout
 						g.Label("\uf007").Font(resources.IconFont),
 						g.Label(fmt.Sprint(server.Data.Clients)+"/"+fmt.Sprint(server.Data.SvMaxclients)),
 					),
+					g.Tooltip("Spieleranzahl"),
 					g.Row(
 						g.Button("Verbinden").OnClick(func() { verbinden(status) }),
 						resources.WithIconFont(
-							g.Button("\uf0c5").OnClick(func() { g.Context.GetPlatform().SetClipboard(server.EndPoint) }),
-							g.Button("\f0dd").OnClick(func() { // Verstecken
-								server = ServerInfo{}
-							}),
+							g.Row(
+								g.Button("\uf0c5").OnClick(func() { g.Context.GetPlatform().SetClipboard(server.EndPoint) }),
+								g.Button("\uf0dd").OnClick(func() { // Verstecken
+									server = ServerInfo{}
+								}),
+							),
 						),
 					),
 				),
