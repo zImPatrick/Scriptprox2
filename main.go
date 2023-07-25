@@ -6,6 +6,7 @@ import (
 	"scriptprox/gui"
 	"scriptprox/proxies/http"
 	"scriptprox/proxies/udp"
+	"scriptprox/settings"
 	"scriptprox/updater"
 	"sync"
 )
@@ -18,7 +19,9 @@ func main() {
 	go http.InitProxy(&waitgroup)
 	go udp.InitProxy(&waitgroup)
 
-	go updater.CheckForUpdates()
+	if !settings.GetSettings().FuckUpdates {
+		go updater.CheckForUpdates()
+	}
 
 	if len(os.Args) > 1 {
 		addrToConnectTo := os.Args[1]

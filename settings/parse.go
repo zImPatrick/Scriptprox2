@@ -13,7 +13,8 @@ type Settings struct {
 	ResourceName   string
 	GUIDOverride   string
 	TicketOverride string
-	ProfiModus	bool
+	ProfiModus     bool
+	FuckUpdates    bool
 }
 
 var settings *Settings

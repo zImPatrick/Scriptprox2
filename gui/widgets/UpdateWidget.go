@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os/exec"
 	"scriptprox/gui/resources"
+	"scriptprox/settings"
 	"scriptprox/updater"
 
 	g "github.com/AllenDang/giu"
@@ -28,6 +29,17 @@ func GetStringForUpdate(update updater.UpdateInfo) string {
 }
 
 func UpdateWidget() g.Layout {
+	if config.FuckUpdates {
+		return g.Layout{
+			g.Label("Du hast die Einstellung 'FuckUpdates' aktiviert. Willst du Sie deaktivieren?"),
+			g.Button("Ja").OnClick(func() {
+				config.FuckUpdates = false
+				settings.SaveSettings()
+
+				go updater.CheckForUpdates()
+			}),
+		}
+	}
 	if updater.LastUpdate == nil { // sollten vielleicht auch error ausgeben
 		return g.Layout{
 			g.Label("Suche nach Updates..."),
