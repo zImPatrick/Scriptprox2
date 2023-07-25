@@ -19,15 +19,17 @@ func ConfigWidget() g.Layout {
 			g.Label("Resource-Name"),
 			g.InputText(&config.ResourceName),
 		),
-		g.Separator(),
-		g.Row(
-			g.Label("GUID Override"),
-			g.InputText(&config.GUIDOverride),
-		),
-		g.Row(
-			g.Label("Ticket Override"),
-			g.InputText(&config.TicketOverride),
-		),
+		g.Condition(config.ProfiModus, g.Layout{
+			g.Separator(),
+			g.Row(
+				g.Label("GUID Override"),
+				g.InputText(&config.GUIDOverride),
+			),
+			g.Row(
+				g.Label("Ticket Override"),
+				g.InputText(&config.TicketOverride),
+			),
+		}, g.Layout{}),
 		g.Button("Speichern").OnClick(settings.SaveSettings),
 	}
 }
