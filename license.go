@@ -33,7 +33,7 @@ const (
 var fingerprint []byte
 
 func doCheckRequest(hwid []byte) {
-	fingerprint, _ = hex.DecodeString("5c60a6c8b84bd04e8daf2d14219ddbeb8934e33b78d9d09a065f18b98aaf6c72")
+	fingerprint, _ = hex.DecodeString("c1a2d66ed06cd7d67064e2dff0cf26db202f8c5c326e920641112b5e0440256c")
 	client := &http.Client{
 		Transport: &http.Transport{
 			DialTLS: dialerTLSPin,
