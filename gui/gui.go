@@ -54,5 +54,14 @@ func RunGUI() {
 	font := g.AddFontFromBytes("Icons", IconFont, 16)
 	resources.IconFont = font
 	wnd = g.NewMasterWindow("Scriptprox", 800, 400, g.MasterWindowFlags(g.WindowFlagsAlwaysAutoResize))
+	wnd.SetCloseCallback(func() bool {
+		// #11, Nutzer verweigern das Programm zu schließen während ein Update läuft
+		// Hat schon mal installationen corrupted lol
+		if updater.LastUpdate != nil {
+			return updater.LastUpdate.State != updater.UPDATING
+		}
+
+		return true
+	})
 	wnd.Run(loop)
 }
