@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"scriptprox/gui"
 	"scriptprox/proxies/http"
 	"scriptprox/proxies/udp"
@@ -21,11 +20,6 @@ func main() {
 
 	if !settings.GetSettings().FuckUpdates {
 		go updater.CheckForUpdates()
-	}
-
-	if len(os.Args) > 1 {
-		addrToConnectTo := os.Args[1]
-		http.ChangeEndpoint(addrToConnectTo)
 	}
 
 	gui.RunGUI()

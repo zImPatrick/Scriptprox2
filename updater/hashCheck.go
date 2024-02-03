@@ -2,14 +2,17 @@ package updater
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"slices"
 )
 
-var hashes map[string]string
+var hashes map[string][32]byte
+
 func getNewestHashes() error {
 	hashReq, err := http.Get(UPDATER_HOST + "/hashes.php")
 	if err != nil {
@@ -19,7 +22,7 @@ func getNewestHashes() error {
 	body, err := io.ReadAll(hashReq.Body)
 	if err != nil {
 		fmt.Println("[Updater] Hashes konnten nicht gelesen werden")
-		return err 
+		return err
 	}
 
 	var data map[string]string
@@ -30,43 +33,49 @@ func getNewestHashes() error {
 		return err
 	}
 
-	hashes = data
+	hashes = map[string][32]byte{}
+	for filename, hash := range data {
+		hexed, _ := hex.DecodeString(hash)
+		hashes[filename] = [32]byte(hexed)
+	}
+	data = nil
 
 	return nil
 }
 
-func hashAndCheck(file string, hash string) (bool, error) {
+func hashAndCheck(file string, hash [32]byte) (bool, error) {
 	opened, err := os.Open(file)
 
 	if err != nil {
 		return false, err
 	}
 
+	defer opened.Close()
+
 	bytes, err := io.ReadAll(opened)
 
 	if err != nil {
-		return false, err 
+		return false, err
 	}
 
 	checksum := sha256.Sum256(bytes)
-	return fmt.Sprintf("%x", checksum) != hash, nil
+	return !slices.Equal(hash[:], checksum[:]), nil
 }
 
 func checkAllFiles() []string {
-	filesWithWrongHash := make([]string, 0)
+	filesWithWrongHash := []string{}
 
 	for fileName, sha256Hash := range hashes {
 		shouldUpdate, err := hashAndCheck(fileName, sha256Hash)
 		if err != nil && err == os.ErrNotExist {
 			shouldUpdate = true
-		} else if (err != nil) {
+		} else if err != nil {
 			fmt.Printf("Fehler beim Checken von %s aufgetreten: %s\n", fileName, err.Error())
 		}
 
 		if shouldUpdate {
 			filesWithWrongHash = append(filesWithWrongHash, fileName)
 		}
-	} 
-
+	}
 	return filesWithWrongHash
 }

@@ -3,6 +3,7 @@ package widgets
 import (
 	"fmt"
 	"regexp"
+	"runtime"
 	"scriptprox/gui/resources"
 	"scriptprox/gui/serverlist"
 	serverlistProtos "scriptprox/gui/serverlist/protos"
@@ -108,5 +109,8 @@ func RefreshServerlist() {
 			return serversInServerlist[i].Data.Clients > serversInServerlist[j].Data.Clients
 		})
 		rows = nil
+		// hilft der memory usage minimal
+		runtime.GC()
 	})
+
 }
