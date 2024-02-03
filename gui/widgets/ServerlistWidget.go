@@ -51,6 +51,12 @@ func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) [
 				g.Selectable(lang).Size(float32(w), 48).Flags(g.SelectableFlagsSpanAllColumns).OnClick(func() {
 					unnessecaryString := ""
 					go ServerSuchen(&unnessecaryString, serversInServerlist[test].EndPoint)
+				}).OnDClick(func() {
+					go func() {
+						unnessecaryString := ""
+						ServerSuchen(&unnessecaryString, serversInServerlist[test].EndPoint)
+						verbinden(&unnessecaryString)
+					}()
 				}).Build()
 			}),
 			g.Label(strconv.Itoa(int(serversInServerlist[i].Data.Clients))),
