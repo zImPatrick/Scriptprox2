@@ -51,9 +51,9 @@ var IconFont []byte
 func RunGUI() {
 	go widgets.RefreshServerlist()
 	serverCleanRegex = regexp.MustCompile(`\^[0-9]`)
-	font := g.AddFontFromBytes("Icons", IconFont, 16)
-	resources.IconFont = font
 	wnd = g.NewMasterWindow("Scriptprox", 800, 400, g.MasterWindowFlags(g.WindowFlagsAlwaysAutoResize))
+	font := g.Context.FontAtlas.AddFontFromBytes("Icons", IconFont, 16)
+	resources.IconFont = font
 	wnd.SetCloseCallback(func() bool {
 		// #11, Nutzer verweigern das Programm zu schließen während ein Update läuft
 		// Hat schon mal installationen corrupted lol
