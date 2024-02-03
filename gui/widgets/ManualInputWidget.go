@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 
-	"scriptprox/cfx_console"
 	"scriptprox/gui/resources"
 	httpScriptprox "scriptprox/proxies/http"
 	"scriptprox/settings"
@@ -36,7 +35,6 @@ var (
 	server             ServerInfo // zu faul ein interface zu erstellen
 	manualServerIp     string
 	profiModusDropdown bool
-	CfxConsole         cfx_console.CfxConsole
 )
 
 func ServerSuchen(status *string, idOrUrl string) {
@@ -67,19 +65,9 @@ func verbinden(status *string) {
 	if !strings.HasPrefix(connectEndpoint, "http") {
 		connectEndpoint = "https://" + connectEndpoint
 	}
-
 	httpScriptprox.ChangeEndpoint(connectEndpoint)
-
-	// benutzen wir mal die cfx console
-	err := CfxConsole.SendCommand("connect localhost:30120")
-	if err != nil {
-		// wenn wir nicht connecten/senden können, können wir ja alternativ
-		// den alten weg verwenden (der startet ja auch fivem)
-		exec.Command("rundll32", "url.dll,FileProtocolHandler", "fivem://connect/localhost:30120").Run()
-		*status = "FiveM wurde gestartet."
-	}
-
-	*status = "Du solltest jetzt connecten. Falls nicht: F8 -> connect localhost:30120"
+	exec.Command("rundll32", "url.dll,FileProtocolHandler", "fivem://connect/localhost:30120").Run()
+	*status = "FiveM wurde gestartet."
 }
 
 func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout {
