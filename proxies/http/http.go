@@ -129,13 +129,13 @@ func InitProxy(waitgroup *sync.WaitGroup) {
 		Addr:    ":30120",
 		Handler: http.HandlerFunc(requestHandler),
 	}
-	go func () {
+	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
 			utils.ThrowErrorAndQuit("Der HTTP-Server konnte nicht starten. Ist Port 30120 belegt?", err)
 		}
 	}()
-	
+
 	// HTTPS Server
 	// du brauchst anscheinend einen HTTPS-Server
 	// für die FiveM Resources. kp wieso

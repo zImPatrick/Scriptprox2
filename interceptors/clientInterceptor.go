@@ -65,7 +65,7 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 
 		for ind, resource := range bodyData.Resources {
 			if resource.FileServer == "" {
-				bodyData.Resources[ind].FileServer = resp.Request.URL.Scheme + "://" + resp.Request.URL.Host + "/files"
+				bodyData.Resources[ind].FileServer = bodyData.FileServer
 			}
 		}
 
@@ -79,10 +79,7 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 		})
 
 		marshaled, _ := json.Marshal(bodyData)
-		// fmt.Println(marsha7t6rled)
 		resp.Body = io.NopCloser(bytes.NewBuffer(marshaled))
-
-		// resp.Body = io.NopCloser(bytes.NewBuffer(reqBody))
 	}
 	return resp
 }
