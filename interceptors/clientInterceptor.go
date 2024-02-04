@@ -65,7 +65,11 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 
 		for ind, resource := range bodyData.Resources {
 			if resource.FileServer == "" {
-				bodyData.Resources[ind].FileServer = bodyData.FileServer
+				if bodyData.FileServer == "https://%s/files" {
+					bodyData.Resources[ind].FileServer = resp.Request.URL.Scheme + "://" + resp.Request.URL.Host + "/files"
+				} else {
+					bodyData.Resources[ind].FileServer = bodyData.FileServer
+				}
 			}
 		}
 
