@@ -12,6 +12,7 @@ import (
 )
 
 var hashes map[string][32]byte
+var usedUpdaterHost string
 
 func getNewestHashes() error {
 	hashReq, err := http.Get(UPDATER_HOST + "/hashes.php")

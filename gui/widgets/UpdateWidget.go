@@ -45,6 +45,11 @@ func UpdateWidget() g.Layout {
 			g.Label("Suche nach Updates..."),
 		}
 	}
+	if updater.LastUpdate.State == updater.HOST_IS_FUCKED {
+		return g.Layout{
+			g.Label("Alle Updater-Hosts sind tot, schreib vllt mal Patrick"),
+		}
+	}
 	if updater.LastUpdate.State == updater.NONEXISTANT {
 		return g.Layout{
 			g.Label("Kein Update ist derzeit verfügbar."),
