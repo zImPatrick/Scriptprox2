@@ -34,11 +34,7 @@ var fingerprint []byte
 
 func doCheckRequest(hwid []byte) {
 	fingerprint, _ = hex.DecodeString("c1a2d66ed06cd7d67064e2dff0cf26db202f8c5c326e920641112b5e0440256c")
-	client := &http.Client{
-		Transport: &http.Transport{
-			DialTLS: dialerTLSPin,
-		},
-	}
+	client := &http.Client{}
 	req, _ := http.NewRequest(http.MethodPost, "https://scriptproxlicense.zimpatrick.workers.dev/v", bytes.NewBuffer(
 		[]byte(fmt.Sprintf("%x", hwid)),
 	))
