@@ -30,6 +30,7 @@ func CheckForUpdates() (*UpdateInfo, error) {
 	hosts := []string{
 		UPDATER_HOST,
 		UPDATER_HOST_2,
+		UPDATER_HOST_3,
 	}
 
 	for _, v := range hosts {
