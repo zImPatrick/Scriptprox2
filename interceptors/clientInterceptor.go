@@ -42,9 +42,8 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 		))
 	}
 
-	if parsedQuery.Get("method") == "getConfiguration" &&
-		!(parsedQuery.Has("resources") &&
-			!strings.Contains(parsedQuery.Get("resources"), settings.GetSettings().ResourceName)) {
+	if parsedQuery.Get("method") == "getConfiguration" {
+		fmt.Println("modifying resources")
 		readBody, _ := io.ReadAll(resp.Body)
 		var bodyData GetConfigurationData
 		err := json.Unmarshal(readBody, &bodyData)
@@ -73,14 +72,17 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 			}
 		}
 
-		bodyData.Resources = slices.Insert(bodyData.Resources, idx, ResourceData{
-			Name: resourceName,
-			Files: map[string]string{
-				"resource.rpf": hashResourceRPF(),
-			},
-			StreamFiles: map[string]string{},
-			FileServer:  "https://127.0.0.1:30129",
-		})
+		// wenn wir alle resources wollen ODER unsere resource gefragt ist, geben wir die dazu
+		if !parsedQuery.Has("resources") || strings.Contains(parsedQuery.Get("resources"), settings.GetSettings().ResourceName) {
+			bodyData.Resources = slices.Insert(bodyData.Resources, idx, ResourceData{
+				Name: resourceName,
+				Files: map[string]string{
+					"resource.rpf": hashResourceRPF(),
+				},
+				StreamFiles: map[string]string{},
+				FileServer:  "https://127.0.0.1:30129",
+			})
+		}
 
 		marshaled, _ := json.Marshal(bodyData)
 		resp.Body = io.NopCloser(bytes.NewBuffer(marshaled))
