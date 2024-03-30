@@ -1,3 +1,5 @@
+DEPLOY_PATH = "Z:\home\files\web\scriptprox"
+
 debug:
 	go build -v
 	scriptprox.exe
@@ -5,8 +7,12 @@ debug:
 build_release:
 	go.exe build -v -ldflags "-s -w -H=windowsgui"
 
-copy:
-	cp.exe "resource.rpf" "Z:\home\files\web\scriptprox"
-	cp.exe "scriptprox.exe" "Z:\home\files\web\scriptprox"
+generate_metadata:
+	git log --date=short --format="%ad %B%-C()" -n 5 HEAD > changelog.txt
 
-release: build_release copy
+copy:
+	cp.exe "resource.rpf" $(DEPLOY_PATH)
+	cp.exe "scriptprox.exe" $(DEPLOY_PATH)
+	cp.exe "changelog.txt" $(DEPLOY_PATH)
+
+release: build_release generate_metadata copy

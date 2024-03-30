@@ -31,5 +31,5 @@ settings.toml
 exportedScripts
 scriptprox.exe.bak
 
-!build/.gitkeep
-build/*
+# wird von Makefile erstellt
+changelog.txt
