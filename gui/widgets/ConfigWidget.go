@@ -1,7 +1,9 @@
 package widgets
 
 import (
+	"image/color"
 	"scriptprox/settings"
+	"scriptprox/utils"
 
 	g "github.com/AllenDang/giu"
 )
@@ -33,5 +35,8 @@ func ConfigWidget() g.Layout {
 			),
 		}, g.Layout{}),
 		g.Button("Speichern").OnClick(settings.SaveSettings),
+		g.Style().SetColor(g.StyleColorText, color.Gray{Y: 80}).To(
+			g.Label("Version: " + utils.Commit),
+		),
 	}
 }

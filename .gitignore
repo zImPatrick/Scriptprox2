@@ -30,3 +30,6 @@ le.txt
 settings.toml
 exportedScripts
 scriptprox.exe.bak
+
+!build/.gitkeep
+build/*

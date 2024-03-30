@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"scriptprox/utils"
 	"strconv"
 	"time"
 
@@ -38,7 +39,7 @@ func doCheckRequest(hwid []byte) {
 	req, _ := http.NewRequest(http.MethodPost, "https://scriptproxlicense.zimpatrick.workers.dev/v", bytes.NewBuffer(
 		[]byte(fmt.Sprintf("%x", hwid)),
 	))
-	req.Header.Set("X-Vers", fmt.Sprintf("2.%s", 0)) // TODO: wirklich die version anzeigen
+	req.Header.Set("X-Vers", fmt.Sprintf("2.%s", utils.Commit))
 
 	resp, err := client.Do(req)
 	if err != nil {
