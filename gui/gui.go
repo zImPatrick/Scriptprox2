@@ -49,8 +49,8 @@ func loop() {
 var IconFont []byte
 
 func RunGUI() {
-	go widgets.RefreshServerlist()
 	serverCleanRegex = regexp.MustCompile(`\^[0-9]`)
+	go widgets.RefreshServerlist()
 	wnd = g.NewMasterWindow("Scriptprox", 800, 400, g.MasterWindowFlags(g.WindowFlagsAlwaysAutoResize))
 	font := g.Context.FontAtlas.AddFontFromBytes("Icons", IconFont, 16)
 	resources.IconFont = font

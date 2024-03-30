@@ -1,7 +1,6 @@
 package serverlist
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,11 +10,9 @@ import (
 )
 
 func FrameReader(reader io.Reader, cb func([]byte), doneCb func()) {
-	offset := 0
-
+	var frameHeader [4]uint8
 	for {
-		var frameHeader [4]uint8
-		n, err := reader.Read(frameHeader[:])
+		n, err := io.ReadAtLeast(reader, frameHeader[:], 4)
 		if err != nil {
 			if err != io.EOF {
 				fmt.Println("reader err: " + err.Error())
@@ -28,10 +25,15 @@ func FrameReader(reader io.Reader, cb func([]byte), doneCb func()) {
 			fmt.Println("n is not 4, bailing")
 			return
 		}
+
 		frameLength := int(frameHeader[0]) | int(frameHeader[1])<<8 | int(frameHeader[2])<<16 | int(frameHeader[3])<<24
-		offset = offset + 4 + frameLength
+		if frameLength > 65535 {
+			fmt.Println("frame too big! aborting")
+			return
+		}
+
 		frame := make([]byte, frameLength)
-		reader.Read(frame)
+		io.ReadAtLeast(reader, frame, frameLength)
 		cb(frame)
 	}
 }
@@ -43,12 +45,9 @@ func GotChunk(chunk []byte) {
 
 func RequestServerlist(OnServer func(*protos.Server), OnDone func()) {
 	resp, _ := http.Get("https://servers-frontend.fivem.net/api/servers/streamRedir/")
-	// es klappt!
-	dat, _ := io.ReadAll(resp.Body)
-	resp.Body = io.NopCloser(bytes.NewBuffer(dat))
 
 	FrameReader(resp.Body, func(b []byte) {
-		var server protos.Server
+		server := protos.Server{}
 		proto.Unmarshal(b, &server)
 		OnServer(&server)
 	}, OnDone)

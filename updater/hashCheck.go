@@ -50,16 +50,16 @@ func hashAndCheck(file string, hash [32]byte) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
 	defer opened.Close()
 
-	bytes, err := io.ReadAll(opened)
+	sh := sha256.New()
+	_, err = io.Copy(sh, opened)
 
 	if err != nil {
 		return false, err
 	}
 
-	checksum := sha256.Sum256(bytes)
+	checksum := sh.Sum(nil)
 	return !slices.Equal(hash[:], checksum[:]), nil
 }
 

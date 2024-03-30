@@ -3,7 +3,6 @@ package widgets
 import (
 	"fmt"
 	"regexp"
-	"runtime"
 	"scriptprox/gui/resources"
 	"scriptprox/gui/serverlist"
 	serverlistProtos "scriptprox/gui/serverlist/protos"
@@ -22,8 +21,9 @@ var Filters struct {
 var serversInServerlist []*serverlistProtos.Server
 
 func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) []*g.TableRowWidget {
-	rows := []*g.TableRowWidget{}
-	// rows := make([]*g.TableRowWidget, len(serversInServerlist))
+	rows := make([]*g.TableRowWidget, len(serversInServerlist))
+
+	amount := 0
 	for i := range serversInServerlist {
 		unfilteredName := serverCleanRegex.ReplaceAllString(serversInServerlist[i].Data.Hostname, "")
 		if Filters.servername != "" && !strings.Contains(strings.ToLower(unfilteredName), strings.ToLower(Filters.servername)) {
@@ -39,8 +39,11 @@ func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) [
 		if Filters.land != "" && !strings.Contains(lang, Filters.land) {
 			continue
 		}
-		test := i
-		rows = append(rows, g.TableRow(
+
+		// Workaround für Bug in Golang: https://go.dev/blog/loopvar-preview
+		// kb gerade auf 1.21 zu migraten
+		serverInListIndex := i
+		rows[amount] = g.TableRow(
 			g.Condition(serversInServerlist[i].Data.IconVersion != 0, g.Layout{
 				g.ImageWithURL(
 					"https://servers-live.fivem.net/servers/icon/"+serversInServerlist[i].EndPoint+"/"+fmt.Sprint(serversInServerlist[i].Data.IconVersion)+".png",
@@ -51,39 +54,41 @@ func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) [
 				w, _ := wnd.GetSize()
 				g.Selectable(lang).Size(float32(w), 48).Flags(g.SelectableFlagsSpanAllColumns).OnClick(func() {
 					unnessecaryString := ""
-					go ServerSuchen(&unnessecaryString, serversInServerlist[test].EndPoint)
+					go ServerSuchen(&unnessecaryString, serversInServerlist[serverInListIndex].EndPoint)
 				}).OnDClick(func() {
 					go func() {
 						unnessecaryString := ""
-						ServerSuchen(&unnessecaryString, serversInServerlist[test].EndPoint)
+						ServerSuchen(&unnessecaryString, serversInServerlist[serverInListIndex].EndPoint)
 						verbinden(&unnessecaryString)
 					}()
 				}).Build()
 			}),
 			g.Label(strconv.Itoa(int(serversInServerlist[i].Data.Clients))),
-		).MinHeight(48))
+		).MinHeight(48)
+		amount = amount + 1
 	}
-
-	return rows
+	return rows[:amount]
 }
 
 var rows []*g.TableRowWidget
 
-func UpdateServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) {
-	rows = buildServerlistRows(wnd, serverCleanRegex)
-}
-
 func ServerlistWidget(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) g.Layout {
-	if rows == nil {
-		UpdateServerlistRows(wnd, serverCleanRegex)
+	if !isServerlistLoading && rows == nil {
+		fmt.Println("updating server list")
+
+		// warum muss ich rows hier nochmal setzen??
+		// ich mach das doch in der methode?
+		// blöder computer
+		rows = buildServerlistRows(wnd, serverCleanRegex)
 	}
+
 	return g.Layout{
 		g.Row(
 			g.InputText(&Filters.servername).OnChange(func() {
-				UpdateServerlistRows(wnd, serverCleanRegex)
+				rows = buildServerlistRows(wnd, serverCleanRegex)
 			}).Hint("Nach Server suchen"),
 			g.InputText(&Filters.land).OnChange(func() {
-				UpdateServerlistRows(wnd, serverCleanRegex)
+				rows = buildServerlistRows(wnd, serverCleanRegex)
 			}).Hint("Land eingeben (z.B. de, fr)").Size(220),
 			resources.WithIconFont(
 				g.Button("\uf021").OnClick(func() { go RefreshServerlist() }),
@@ -98,7 +103,14 @@ func ServerlistWidget(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) g.La
 	}
 }
 
+var isServerlistLoading bool
+
 func RefreshServerlist() {
+	if isServerlistLoading {
+		// wtf? wir können jetzt nicht einfach reloaden während schon geloaded wird
+		return
+	}
+	isServerlistLoading = true
 	serversInServerlist = []*serverlistProtos.Server{}
 	rows = nil
 	serverlist.RequestServerlist(func(s *serverlistProtos.Server) {
@@ -108,9 +120,8 @@ func RefreshServerlist() {
 		sort.SliceStable(serversInServerlist, func(i, j int) bool {
 			return serversInServerlist[i].Data.Clients > serversInServerlist[j].Data.Clients
 		})
+		isServerlistLoading = false
 		rows = nil
-		// hilft der memory usage minimal
-		runtime.GC()
 	})
 
 }
