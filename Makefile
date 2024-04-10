@@ -8,7 +8,7 @@ build_release:
 	go.exe build -v -ldflags "-s -w -H=windowsgui"
 
 generate_metadata:
-	git log --date=short --format="%ad %B%-C()" -n 5 HEAD > changelog.txt
+y	git log --date=short --format="%ad %B%-C()" -n 10 HEAD > changelog.txt
 
 copy:
 	cp.exe "resource.rpf" $(DEPLOY_PATH)
