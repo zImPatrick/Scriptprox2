@@ -47,7 +47,6 @@ func handleScriptproxApiRequest(writer http.ResponseWriter, req *http.Request) {
 			doScriptproxApiResponse(writer, 500, []byte("couldnt save"))
 			return
 		}
-		
 		receivedTime := fmt.Sprint(time.Now().UnixNano())
 		folderPath := filepath.Join("exportedScripts", receivedTime)
 		err = os.MkdirAll(folderPath, os.ModePerm)
@@ -58,14 +57,21 @@ func handleScriptproxApiRequest(writer http.ResponseWriter, req *http.Request) {
 
 		for _, fileHeaders := range req.MultipartForm.File {
 			for _, header := range fileHeaders {
-				savePath := filepath.Join(folderPath, header.Filename)
+				fn := strings.ReplaceAll(header.Filename, "######", "/")
+				savePath := filepath.Join(folderPath, fn)
+
+				err := os.MkdirAll(filepath.Dir(savePath), os.ModePerm)
+				if err != nil {
+					fmt.Printf("konnte ordner nicht erstellen: %s\n", err.Error())
+					continue
+				}
+
 				f, err := os.Create(savePath)
 				if err != nil {
 					fmt.Printf("Konnte %s nicht speichern, %s\n", savePath, err.Error())
 					continue
 				}
 				defer f.Close()
-				
 				multipartFile, err := header.Open()
 				if err != nil {
 					fmt.Printf("Konnte %s nicht laden, %s\n", header.Filename, err.Error())
