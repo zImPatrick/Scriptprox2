@@ -32,42 +32,41 @@ type ServerInfo struct {
 
 var (
 	serverIdOrUrl      string
-	server             ServerInfo // zu faul ein interface zu erstellen
+	server             ServerInfo
 	manualServerIp     string
 	profiModusDropdown bool
 )
 
-func ServerSuchen(status *string, idOrUrl string) {
+func FindServer(status *string, idOrUrl string) {
 	*status = ""
-	serverIdOrUrl = idOrUrl
-	serverIdOrUrl = strings.TrimPrefix(serverIdOrUrl, "cfx.re/join/")
+	serverIdOrUrl = strings.TrimPrefix(idOrUrl, "cfx.re/join/")
 
 	resp, err := http.Get("https://servers-frontend.fivem.net/api/servers/single/" + serverIdOrUrl)
 	if err != nil {
-		*status = "Fehler 1 beim Abrufen des Servers (" + err.Error() + ")"
+		*status = "Couldn't retrieve server (" + err.Error() + ")"
 		return
 	}
-	respBody, err := io.ReadAll(resp.Body) // todo: error handling
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		*status = "Fehler 2 beim Abrufen des Servers (konnte Antwort nicht lesen, " + err.Error() + ")"
+		*status = "Couldn't retrieve server (unable to read body, " + err.Error() + ")"
 		return
 	}
 	err = json.Unmarshal(respBody, &server)
 	if err != nil {
-		*status = "Fehler 3 beim Abrufen des Servers (ist kein JSON, " + err.Error() + ")"
+		*status = "Couldn't retrieve server (failed parsing JSON, " + err.Error() + ")"
 		return
 	}
 	*status = ""
 }
 
-func verbinden(status *string) {
+func connectToServer(status *string) {
 	connectEndpoint := server.Data.ConnectEndpoints[0]
 	if !strings.HasPrefix(connectEndpoint, "http") {
 		connectEndpoint = "https://" + connectEndpoint
 	}
 	httpScriptprox.ChangeEndpoint(connectEndpoint)
 	exec.Command("rundll32", "url.dll,FileProtocolHandler", "fivem://connect/localhost:30120").Run()
-	*status = "FiveM wurde gestartet."
+	*status = "Connecting"
 }
 
 func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout {
@@ -79,33 +78,33 @@ func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout
 			g.InputText(&serverIdOrUrl).Hint("cfx.re/join/zq4ayd").Size(200),
 			resources.WithIconFont(
 				g.Row(
-					g.Button("\uf002").OnClick(func() { go ServerSuchen(status, serverIdOrUrl) }),
-					g.Button("\uf0ea").OnClick(func() { go ServerSuchen(status, g.Context.GetPlatform().GetClipboard()) }),
+					g.Button("\uf002").OnClick(func() { go FindServer(status, serverIdOrUrl) }),
+					g.Button("\uf0ea").OnClick(func() { go FindServer(status, g.Context.GetPlatform().GetClipboard()) }),
 					g.Condition(config.ProfiModus, g.Layout{
 						g.Button("\uf0dd").OnClick(func() { profiModusDropdown = !profiModusDropdown }),
 					}, g.Layout{
-						g.Dummy(0, 0), // Workaround für Bug in giu
+						g.Dummy(0, 0),
 					}),
 				),
 			),
 		),
 		g.Condition(profiModusDropdown, g.Layout{
 			g.Row(
-				g.InputText(&manualServerIp).Hint("https://zimpatrick.gq"),
-				g.Button("Einstellen").OnClick(func() {
+				g.InputText(&manualServerIp).Hint("http://127.0.0.1:30120"),
+				g.Button("Connect").OnClick(func() {
 					err := httpScriptprox.ChangeEndpoint(manualServerIp)
 					if err != nil {
 						*status = err.Error()
 					} else {
 						exec.Command("rundll32", "url.dll,FileProtocolHandler", "fivem://connect/localhost:30120").Run()
-						*status = "FiveM wurde gestartet."
+						*status = "Connecting"
 					}
 				}),
 			),
 		}, g.Layout{}),
 		g.Condition(server.EndPoint != "", g.Layout{
 			g.Row(
-				// mir gefällt das hier nicht.
+				// this... doesn't look great, but it works
 				g.Condition(server.Data.IconVersion != 0, g.Layout{
 					g.ImageWithURL("https://servers-live.fivem.net/servers/icon/" + server.EndPoint + "/" + fmt.Sprint(server.Data.IconVersion) + ".png").LayoutForLoading(
 						g.Dummy(96, 96),
@@ -119,9 +118,9 @@ func ManualInputWidget(status *string, serverCleanRegex *regexp.Regexp) g.Layout
 						g.Label("\uf007").Font(resources.IconFont),
 						g.Label(fmt.Sprint(server.Data.Clients)+"/"+fmt.Sprint(server.Data.SvMaxclients)),
 					),
-					g.Tooltip("Spieleranzahl"),
+					g.Tooltip("Amount of players currently online"),
 					g.Row(
-						g.Button("Verbinden").OnClick(func() { verbinden(status) }),
+						g.Button("Connect").OnClick(func() { connectToServer(status) }),
 						resources.WithIconFont(
 							g.Row(
 								g.Button("\uf0c5").OnClick(func() { g.Context.GetPlatform().SetClipboard(server.EndPoint) }),

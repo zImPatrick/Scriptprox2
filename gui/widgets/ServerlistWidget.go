@@ -40,9 +40,6 @@ func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) [
 			continue
 		}
 
-		// Workaround für Bug in Golang: https://go.dev/blog/loopvar-preview
-		// kb gerade auf 1.21 zu migraten
-		serverInListIndex := i
 		rows[amount] = g.TableRow(
 			g.Condition(serversInServerlist[i].Data.IconVersion != 0, g.Layout{
 				g.ImageWithURL(
@@ -54,12 +51,12 @@ func buildServerlistRows(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) [
 				w, _ := wnd.GetSize()
 				g.Selectable(lang).Size(float32(w), 48).Flags(g.SelectableFlagsSpanAllColumns).OnClick(func() {
 					unnessecaryString := ""
-					go ServerSuchen(&unnessecaryString, serversInServerlist[serverInListIndex].EndPoint)
+					go FindServer(&unnessecaryString, serversInServerlist[i].EndPoint)
 				}).OnDClick(func() {
 					go func() {
 						unnessecaryString := ""
-						ServerSuchen(&unnessecaryString, serversInServerlist[serverInListIndex].EndPoint)
-						verbinden(&unnessecaryString)
+						FindServer(&unnessecaryString, serversInServerlist[i].EndPoint)
+						connectToServer(&unnessecaryString)
 					}()
 				}).Build()
 			}),
@@ -76,9 +73,7 @@ func ServerlistWidget(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) g.La
 	if !isServerlistLoading && rows == nil {
 		fmt.Println("updating server list")
 
-		// warum muss ich rows hier nochmal setzen??
-		// ich mach das doch in der methode?
-		// blöder computer
+		// this could be done a lot more elegantly
 		rows = buildServerlistRows(wnd, serverCleanRegex)
 	}
 
@@ -86,19 +81,19 @@ func ServerlistWidget(wnd *g.MasterWindow, serverCleanRegex *regexp.Regexp) g.La
 		g.Row(
 			g.InputText(&Filters.servername).OnChange(func() {
 				rows = buildServerlistRows(wnd, serverCleanRegex)
-			}).Hint("Nach Server suchen"),
+			}).Hint("Search..."),
 			g.InputText(&Filters.land).OnChange(func() {
 				rows = buildServerlistRows(wnd, serverCleanRegex)
-			}).Hint("Land eingeben (z.B. de, fr)").Size(220),
+			}).Hint("Country (de, fr)").Size(220),
 			resources.WithIconFont(
 				g.Button("\uf021").OnClick(func() { go RefreshServerlist() }),
 			),
 		),
 		g.Table().FastMode(true).Freeze(0, 1).Columns(
 			g.TableColumn("").Flags(g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(48),
-			g.TableColumn("Server"),
-			g.TableColumn("Land").Flags(g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(32),
-			g.TableColumn("Spieler").Flags(g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(48),
+			g.TableColumn(""),
+			g.TableColumn("Country").Flags(g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(32),
+			g.TableColumn("Players").Flags(g.TableColumnFlagsWidthFixed).InnerWidthOrWeight(48),
 		).Rows(rows...),
 	}
 }
@@ -107,16 +102,16 @@ var isServerlistLoading bool
 
 func RefreshServerlist() {
 	if isServerlistLoading {
-		// wtf? wir können jetzt nicht einfach reloaden während schon geloaded wird
 		return
 	}
+
 	isServerlistLoading = true
 	serversInServerlist = []*serverlistProtos.Server{}
 	rows = nil
 	serverlist.RequestServerlist(func(s *serverlistProtos.Server) {
 		serversInServerlist = append(serversInServerlist, s)
 	}, func() {
-		// fertig
+		// done with loading, let's sort the list
 		sort.SliceStable(serversInServerlist, func(i, j int) bool {
 			return serversInServerlist[i].Data.Clients > serversInServerlist[j].Data.Clients
 		})

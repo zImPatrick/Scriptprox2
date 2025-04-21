@@ -4,14 +4,10 @@ import (
 	"scriptprox/gui"
 	"scriptprox/proxies/http"
 	"scriptprox/proxies/udp"
-	"sync"
 )
 
 func main() {
-	var waitgroup sync.WaitGroup
-	waitgroup.Add(2)
-	go http.InitProxy(&waitgroup)
-	go udp.InitProxy(&waitgroup)
-
+	go http.InitProxy()
+	go udp.InitProxy()
 	gui.RunGUI()
 }

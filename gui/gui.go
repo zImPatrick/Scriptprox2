@@ -19,14 +19,14 @@ var wnd *g.MasterWindow
 func loop() {
 	g.SingleWindow().Layout(
 		g.TabBar().TabItems(
-			g.TabItem("Allgemein").Layout(
+			g.TabItem("Servers").Layout(
 				widgets.ManualInputWidget(&status, serverCleanRegex),
 				g.Condition(status != "", g.Layout{
 					g.Label("Status: " + status),
 				}, nil),
 				widgets.ServerlistWidget(wnd, serverCleanRegex),
 			),
-			g.TabItem("Einstellungen").Layout(widgets.ConfigWidget()),
+			g.TabItem("Settings").Layout(widgets.ConfigWidget()),
 		),
 	)
 }

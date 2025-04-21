@@ -27,21 +27,19 @@ func GetSettings() *Settings {
 }
 
 func SaveSettings() {
-	fileHandle, err := os.OpenFile("settings.toml", os.O_WRONLY, 0644)
+	fileHandle, err := os.OpenFile("settings.toml", os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
-		fmt.Println("Fehler beim Öffnen der Settings-Datei! " + err.Error())
+		fmt.Println("Couldn't open settings file: " + err.Error())
 	}
 	err = toml.NewEncoder(fileHandle).Encode(settings)
 	if err != nil {
-		fmt.Println("Fehler beim Speichern der Settings-Datei! " + err.Error())
+		fmt.Println("Couldn't save settings file: " + err.Error())
 	}
 }
 
 func parseSettings() {
-	// existiert die config?
 	_, err := os.Stat("settings.toml")
 	if err != nil {
-		fmt.Println("Settings-Datei existiert nicht.")
 		f, _ := os.Create("settings.toml")
 		f.Close()
 		settings = &Settings{
@@ -53,8 +51,7 @@ func parseSettings() {
 		// config existiert; parsen!
 		_, err := toml.DecodeFile("settings.toml", &settings)
 		if err != nil {
-			utils.ThrowErrorAndQuit("Ein Fehler ist beim lesen der Settings-Datei aufgetreten. Bitte lösche die settings.toml Datei und probiere es erneut.", err)
-			fmt.Println("Fehler beim Lesen der Settings-Datei! " + err.Error())
+			utils.ThrowErrorAndQuit("Failed reading the settings file. Please delete it and try again.", err)
 			os.Exit(1)
 		}
 	}

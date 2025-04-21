@@ -3,7 +3,6 @@ package udp
 import (
 	"fmt"
 	"net"
-	"sync"
 	"time"
 )
 
@@ -18,10 +17,10 @@ func GetAddr() *net.UDPAddr {
 
 func ConnectToUDP(addr *net.UDPAddr) {
 	serverAddr = addr
-	// hier sollte etwas error handling stattfinden
+
 	conn, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
-		fmt.Printf("Error beim UDP-Proxy: " + err.Error() + "\n")
+		fmt.Printf("Error vom UDP-Proxy: " + err.Error() + "\n")
 		return
 	}
 	if clientConnection != nil {
@@ -30,8 +29,7 @@ func ConnectToUDP(addr *net.UDPAddr) {
 	clientConnection = conn
 }
 
-func InitProxy(waitgroup *sync.WaitGroup) {
-	defer waitgroup.Done()
+func InitProxy() {
 	udpAddr := &net.UDPAddr{
 		IP:   net.ParseIP("127.0.0.1"),
 		Port: 30120,

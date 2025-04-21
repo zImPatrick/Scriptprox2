@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	_ "embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,7 +12,6 @@ import (
 	"scriptprox/interceptors"
 	"scriptprox/utils"
 	"strings"
-	"sync"
 )
 
 var server *http.Server
@@ -60,7 +58,7 @@ func requestHandler(writer http.ResponseWriter, req *http.Request) {
 		f, err := os.Open("resource.rpf")
 		if err != nil {
 			writer.WriteHeader(500)
-			writer.Write([]byte("Konnte resource.rpf nicht öffnen"))
+			writer.Write([]byte("Couldn't open resource.rpf"))
 		}
 		defer f.Close()
 
@@ -69,14 +67,14 @@ func requestHandler(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if endpoint == (&url.URL{}) {
+	if endpoint == nil {
 		writer.WriteHeader(500)
-		writer.Write([]byte("no endpoint given"))
+		writer.Write([]byte("No server selected"))
 
 		return
 	}
 
-	// die req body ist meist ziemlich klein, und aus convienience gründen lesen wir einfach den body sofort
+	// req body is small, so we don't need to stream it
 	reqBody, _ := io.ReadAll(req.Body)
 
 	for _, interceptor := range BeforeInterceptors {
@@ -96,7 +94,7 @@ func requestHandler(writer http.ResponseWriter, req *http.Request) {
 	newReq.Header = req.Header
 	newResp, err := httpClient.Do(newReq)
 	if err != nil {
-		WriteError(writer, "Fehler beim Verbinden: "+err.Error())
+		WriteError(writer, "Error while connecting: "+err.Error())
 		return
 	}
 
@@ -111,9 +109,7 @@ func requestHandler(writer http.ResponseWriter, req *http.Request) {
 	flushCopy(writer, newResp.Body)
 }
 
-func InitProxy(waitgroup *sync.WaitGroup) {
-	defer waitgroup.Done()
-
+func InitProxy() {
 	// HTTP Client für Requests
 	httpClient = &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -132,13 +128,12 @@ func InitProxy(waitgroup *sync.WaitGroup) {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			utils.ThrowErrorAndQuit("Der HTTP-Server konnte nicht starten. Ist Port 30120 belegt?", err)
+			utils.ThrowErrorAndQuit("Couldn't start http server, is port 30120 free?", err)
 		}
 	}()
 
-	// HTTPS Server
-	// du brauchst anscheinend einen HTTPS-Server
-	// für die FiveM Resources. kp wieso
+	// FiveM specifically wants a HTTPS server to
+	// serve resources (I think adhesive does this?)
 	keyPair, _ := tls.X509KeyPair(
 		certPem,
 		keyPem,
@@ -152,14 +147,14 @@ func InitProxy(waitgroup *sync.WaitGroup) {
 	}
 	err := httpsServer.ListenAndServeTLS("", "")
 	if err != nil {
-		utils.ThrowErrorAndQuit("Der HTTPS-Server konnte nicht starten. Ist Port 30129 belegt?", err)
+		utils.ThrowErrorAndQuit("Couldn't start https server, is port 30129 free?", err)
 	}
 }
 
 func ChangeEndpoint(endpointToChangeTo string) error {
 	u, err := url.Parse(endpointToChangeTo)
 	if err != nil {
-		return errors.New("Ungültige Server-URL! " + err.Error())
+		return fmt.Errorf("Invalid server url specified: %s (%w)", endpointToChangeTo, err)
 	}
 	endpoint = u
 	return nil

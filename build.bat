@@ -1,1 +1,0 @@
-go build -v -ldflags "-s -w"

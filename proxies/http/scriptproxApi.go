@@ -31,7 +31,7 @@ func handleScriptproxApiRequest(writer http.ResponseWriter, req *http.Request) {
 	case "/mumble":
 		addr := udp.GetAddr()
 		var stringAddr []string
-		if addr != nil { // das ist scheiße
+		if addr != nil {
 			stringAddr = strings.Split(addr.String(), ":")
 		} else {
 			stringAddr = []string{endpoint.Hostname(), fmt.Sprint(endpoint.Port())}
@@ -44,14 +44,14 @@ func handleScriptproxApiRequest(writer http.ResponseWriter, req *http.Request) {
 	case "/saveFiles":
 		err := req.ParseMultipartForm(64 << 20)
 		if err != nil {
-			doScriptproxApiResponse(writer, 500, []byte("couldnt save"))
+			doScriptproxApiResponse(writer, 500, []byte("Couldn't parse form data"))
 			return
 		}
 		receivedTime := fmt.Sprint(time.Now().UnixNano())
 		folderPath := filepath.Join("exportedScripts", receivedTime)
 		err = os.MkdirAll(folderPath, os.ModePerm)
 		if err != nil {
-			fmt.Printf("Konnte Ordner %s nicht erstellen, %s\n", folderPath, err.Error())
+			fmt.Printf("Couldn't create folder %s, %s\n", folderPath, err.Error())
 			return
 		}
 
@@ -62,19 +62,19 @@ func handleScriptproxApiRequest(writer http.ResponseWriter, req *http.Request) {
 
 				err := os.MkdirAll(filepath.Dir(savePath), os.ModePerm)
 				if err != nil {
-					fmt.Printf("konnte ordner nicht erstellen: %s\n", err.Error())
+					fmt.Printf("Couldn't create folder %s: %s\n", filepath.Dir(savePath), err.Error())
 					continue
 				}
 
 				f, err := os.Create(savePath)
 				if err != nil {
-					fmt.Printf("Konnte %s nicht speichern, %s\n", savePath, err.Error())
+					fmt.Printf("Couldn't save %s, %s\n", savePath, err.Error())
 					continue
 				}
 				defer f.Close()
 				multipartFile, err := header.Open()
 				if err != nil {
-					fmt.Printf("Konnte %s nicht laden, %s\n", header.Filename, err.Error())
+					fmt.Printf("Couldn't read contents of %s, %s\n", header.Filename, err.Error())
 				}
 				defer multipartFile.Close()
 				io.Copy(f, multipartFile)

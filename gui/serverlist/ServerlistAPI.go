@@ -19,7 +19,7 @@ func FrameReader(reader io.Reader, cb func([]byte), doneCb func()) {
 				fmt.Println(err)
 			}
 			doneCb()
-			return // wenn eof sind wir fertig, sonst scheißen wir drauf
+			return // wenn eof sind wir fertig
 		}
 		if n != 4 {
 			fmt.Println("n is not 4, bailing")

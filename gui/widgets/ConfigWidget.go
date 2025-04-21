@@ -16,13 +16,14 @@ func ConfigWidget() g.Layout {
 	}
 
 	return g.Layout{
-		g.Checkbox("Tokens nicht erstellen/HWID Ban Bypass", &config.HWIDBypass),
-		g.Tooltip("Generiert sogenannte \"Tokens\" nicht. Diese werden oft von Servern benutzt, um deine HWID zu bannen."),
+		g.Checkbox("Do not create tokens", &config.HWIDBypass),
+		g.Tooltip("Do not generate tokens, this is used by servers to ban by HWID"),
+
 		g.Row(
 			g.Label("Resource-Name"),
 			g.InputText(&config.ResourceName),
 		),
-		g.Tooltip("So \"tarnt\" sich das Mod-Menu im Spiel. spawnmanager ist oft ein gutes \"Versteck\"."),
+		g.Tooltip("The resource name your resource.rpf is using (spawnmanager is recommended)"),
 		g.Condition(config.ProfiModus, g.Layout{
 			g.Separator(),
 			g.Row(
@@ -34,7 +35,7 @@ func ConfigWidget() g.Layout {
 				g.InputText(&config.TicketOverride),
 			),
 		}, g.Layout{}),
-		g.Button("Speichern").OnClick(settings.SaveSettings),
+		g.Button("Save").OnClick(settings.SaveSettings),
 		g.Style().SetColor(g.StyleColorText, color.Gray{Y: 80}).To(
 			g.Label("Version: " + utils.Commit),
 		),

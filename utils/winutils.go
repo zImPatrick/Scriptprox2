@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"syscall"
 	"unsafe"
 )
@@ -24,4 +25,5 @@ func ThrowErrorAndQuit(context string, err error) {
 		MB_OK        = 0x00000000
 	)
 	MessageBox(0, "Scriptprox", fmt.Sprintf("%s\n\n%s", context, err), MB_ICONERROR|MB_OK)
+	os.Exit(1)
 }

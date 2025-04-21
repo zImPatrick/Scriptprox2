@@ -19,7 +19,6 @@ import (
 )
 
 func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqBody []byte, resp *http.Response) *http.Response {
-	// configure udp client
 	parsedQuery, _ := url.ParseQuery(string(reqBody))
 
 	if parsedQuery.Get("method") == "getEndpoints" {
@@ -28,9 +27,9 @@ func handleClientInterceptor(writer http.ResponseWriter, req *http.Request, reqB
 		var bodyJson []string
 		json.Unmarshal(readBody, &bodyJson)
 
-		if len(bodyJson) > 0 { // ein endpoint ist angegeben
+		if len(bodyJson) > 0 { // the server provided us with an endpoint
 			addrToConnectTo, _ = net.ResolveUDPAddr("udp", bodyJson[0])
-		} else { // default endpoint nehmen
+		} else { // server gave us no endpoint, let's just try the ip/port we're already using
 			addr, _ := net.ResolveUDPAddr("udp", net.JoinHostPort(resp.Request.URL.Hostname(), resp.Request.URL.Port()))
 			addrToConnectTo = addr
 		}
@@ -114,9 +113,7 @@ type ResourceData struct {
 	Files       map[string]string `json:"files"`
 	StreamFiles any               `json:"streamFiles"`
 	FileServer  string            `json:"fileServer,omitempty"`
-	// StreamFiles StreamFiles    `json:"streamFiles"`
-	// streamFiles haben andere Properties und sind uns ziemlich egal
-	URI string `json:"uri,omitempty"`
+	URI         string            `json:"uri,omitempty"`
 }
 
 type GetConfigurationData struct {
