@@ -1,5 +1,3 @@
-DEPLOY_PATH = "Z:\home\files\web\scriptprox"
-
 debug:
 	go build -v
 	scriptprox.exe
@@ -10,9 +8,4 @@ build_release:
 generate_metadata:
 	git log --date=short --format="%ad %B%-C()" -n 10 HEAD > changelog.txt
 
-copy:
-	cp.exe "resource.rpf" $(DEPLOY_PATH)
-	cp.exe "scriptprox.exe" $(DEPLOY_PATH)
-	cp.exe "changelog.txt" $(DEPLOY_PATH)
-
-release: build_release generate_metadata copy
+release: build_release generate_metadata
