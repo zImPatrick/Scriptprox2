@@ -1,4 +1,4 @@
-module scriptprox
+module github.com/zImPatrick/Scriptprox2
 
 go 1.22
 
@@ -6,7 +6,6 @@ require (
 	github.com/AllenDang/giu v0.7.0
 	github.com/BurntSushi/toml v1.3.2
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
-	golang.org/x/sys v0.18.0
 	google.golang.org/protobuf v1.33.0
 )
 
@@ -21,5 +20,6 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
 	golang.org/x/image v0.15.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	gopkg.in/eapache/queue.v1 v1.1.0 // indirect
 )
