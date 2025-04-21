@@ -14,7 +14,6 @@ type Settings struct {
 	GUIDOverride   string
 	TicketOverride string
 	ProfiModus     bool
-	FuckUpdates    bool
 }
 
 var settings *Settings

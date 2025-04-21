@@ -5,7 +5,6 @@ import (
 	"runtime/debug"
 )
 
-// Das ist nicht portable (aber es ist mir egal)
 var Commit = func() string {
 	var commitMessage string = "unknown"
 	var modified bool = false
